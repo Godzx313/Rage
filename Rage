@@ -1,0 +1,102 @@
+-- LocalScript em StarterPlayerScripts
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Variável para guardar a posição do painel
+local savedPosition = UDim2.new(0.3, 0, 0.3, 0) -- posição inicial padrão
+
+-- Função que cria a GUI
+local function createGui()
+    -- Se já existir, não cria de novo
+    if player.PlayerGui:FindFirstChild("TeleportGui") then
+        return
+    end
+
+    -- Criar ScreenGui principal
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "TeleportGui"
+    screenGui.ResetOnSpawn = false -- 🔑 Não some no respawn
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+
+    -- Criar Frame (painel)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 250, 0, 120)
+    frame.Position = savedPosition -- restaura posição salva
+    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true -- Sistema de Drag
+    frame.Parent = screenGui
+
+    -- Criar botão de Teleportar
+    local teleportButton = Instance.new("TextButton")
+    teleportButton.Size = UDim2.new(0, 200, 0, 40)
+    teleportButton.Position = UDim2.new(0.5, -100, 0.5, -20)
+    teleportButton.Text = "Teleportar"
+    teleportButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+    teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    teleportButton.Font = Enum.Font.SourceSansBold
+    teleportButton.TextSize = 22
+    teleportButton.Parent = frame
+
+    -- Criar botão de Fechar
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -35, 0, 5)
+    closeButton.Text = "X"
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.SourceSansBold
+    closeButton.TextSize = 20
+    closeButton.Parent = frame
+
+    -- Criar botão para reabrir (ImageButton)
+    local reopenButton = Instance.new("ImageButton")
+    reopenButton.Size = UDim2.new(0, 50, 0, 50)
+    reopenButton.Position = UDim2.new(0, 20, 0.8, 0) -- canto inferior esquerdo
+    reopenButton.Image = "rbxassetid://75042186657465" -- sua imagem personalizada
+    reopenButton.BackgroundTransparency = 1
+    reopenButton.Visible = false -- começa invisível
+    reopenButton.Parent = screenGui
+
+    -- CFrame alvo
+    local targetCFrame = CFrame.new(
+        -42308.4023, 3426.14478, 6391.19336,
+        -0.913404047, -7.43731876e-09, -0.407054067,
+        3.71993075e-10, 1, -1.9105812e-08,
+        0.407054067, -1.2105812e-08, -0.913404047
+    )
+
+    -- Função do Teleportar
+    teleportButton.MouseButton1Click:Connect(function()
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = targetCFrame
+    end)
+
+    -- Função do Fechar
+    closeButton.MouseButton1Click:Connect(function()
+        frame.Visible = false
+        reopenButton.Visible = true
+    end)
+
+    -- Função do Reabrir
+    reopenButton.MouseButton1Click:Connect(function()
+        frame.Visible = true
+        reopenButton.Visible = false
+    end)
+
+    -- 🔑 Salvar posição sempre que o painel for movido
+    frame:GetPropertyChangedSignal("Position"):Connect(function()
+        savedPosition = frame.Position
+    end)
+end
+
+-- Criar a GUI no início
+createGui()
+
+-- Recriar sempre que o jogador respawnar
+player.CharacterAdded:Connect(function()
+    task.wait(1) -- dá tempo do PlayerGui carregar
+    createGui()
+end)
